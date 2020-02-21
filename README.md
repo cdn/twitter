@@ -27,4 +27,4 @@ Released under the Apache 2.0 license: http://www.apache.org/licenses/LICENSE-2.
 Contains
 --------
 
-Also contains tmhOAuth, which is released under the Apache 2.0 license. Source: http://www.apache.org/licenses/LICENSE-2.0.html
+Also contains tmhOAuth (@sykezz’s dev branch for JSON for image alt functionality), which is released under the Apache 2.0 license. Source: http://www.apache.org/licenses/LICENSE-2.0.html

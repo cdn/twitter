@@ -269,18 +269,34 @@
 
                         if (!empty($attachments)) {
                         foreach ($attachments as $attachment) {
+                            $where = dirname(__FILE__) . '/medialog.' . gmmktime();
                             if ($bytes = \Idno\Entities\File::getFileDataFromAttachment($attachment)) {
                                 $media = array();
                                 $filename = tempnam(sys_get_temp_dir(), 'idnotwitter');
                                 file_put_contents($filename, $bytes);
                                 $media['media_data'] = base64_encode(file_get_contents($filename));
-                                $params = $media;
-                                $response = $twitterAPI->request('POST', ('https://upload.twitter.com/1.1/media/upload.json'), $params, true, true);
+                                $params = $media;                                                                               // multipart
+                                $response = $twitterAPI->request('POST', $twitterAPI->url('1.1/media/upload.json'), $params, true, true);
                                 \Idno\Core\Idno::site()->logging()->debug($response);
+                              file_put_contents($where, $response);
                                 $json = json_decode($twitterAPI->response['response']);
                                 if (isset($json->media_id_string)) {
                                     $media_id[] = $json->media_id_string;
                                     \Idno\Core\Idno::site()->logging()->error("Twitter media_id : " . $json->media_id);
+                              file_put_contents($where, "\nTwitter media_id : " . $json->media_id_string . "\n", FILE_APPEND);
+
+                                    // set alternative text for this image
+                                    $params = [];
+                                    $params['alt_text'] = []; // <=420 characters
+                                    $params['alt_text']['text'] = $attachment['alt'];
+                                    $params['media_id'] = $json->media_id_string;
+                                    \Idno\Core\Idno::site()->logging()->debug($params);
+                              file_put_contents($where, var_export($params, true) . "\n", FILE_APPEND);
+                                    $params = json_encode($params);
+                                    $response = $twitterAPI->request('POST', $twitterAPI->url('1.1/media/metadata/create.json'), $params, true);
+                                    \Idno\Core\Idno::site()->logging()->error($response);
+                              file_put_contents($where, var_export($response, true) . "\n", FILE_APPEND);
+
                                 } else {
                                 	/*{"errors":[{"message":"Sorry, that page does not exist","code":34}]}*/
                                 	if (isset($json->errors)){
